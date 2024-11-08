@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    *{margin:0;padding: 0;}
+    ul{list-style: none;}
+    img{display: block;}
+
+    #page1{
+      width: 100vw;
+      height: 100vh;
+      background: url(./static/page1_bg.png) center;
+      background-size: cover;
+    }
+    #page1 .page1-lantern {
+      width: 70px;
+      height: 61px;
+      background: url(./static/page1-lantern.png);
+      background-size: cover;
+      margin: 0 auto;
+    }
+    #page1 .page1-frame{
+      width: 200px;
+      height: 62px;
+      background: url(./static/page1-frame.png);
+      background-size: cover;
+      margin: 20px auto;
+      line-height: 62px;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    #page1 .page1-text{
+      width: 100px;
+      height: 301px;
+      background: url(./static/page1-text.png);
+      background-size: cover;
+      margin: 0 auto;
+    }
+    #page1 .page1-fence{
+      width: 100vw;
+      height: 150px;
+      background: url(./static/page1-fence.png) center bottom;
+      background-size: 100%;
+      position: absolute;
+      bottom: 0;
+    }
+    #page1 .page1-p1{
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: url(./static/page1-p1.png);
+      background-size: cover;
+      left: 50%;
+      top: -25px;
+      margin-left: -40px;
+      transform-origin: center bottom;
+      animation: 2s ease-in-out infinite prun -1s;
+    }
+    #page1 .page1-p2{
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: url(./static/page1-p2.png);
+      background-size: cover;
+      left: 10%;
+      top: -15px;
+      margin-left: -20px;
+      transform-origin: center bottom;
+      animation: 2s ease-in-out infinite prun -1.5s;
+    }
+    #page1 .page1-p3{
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: url(./static/page1-p3.png);
+      background-size: cover;
+      right: 10%;
+      top: -15px;
+      margin-left: -20px;
+      transform-origin: center bottom;
+      animation: 2s ease-in-out infinite prun;
+    }
+
+    @keyframes prun {
+      0%{transform: rotate(-10deg);}
+      50%{transform: rotate(10deg);}
+      100%{transform: rotate(-10deg);}
+    }
+
+    #music{
+      width: 30px;
+      height: 30px;
+      background: url(./static/music_icon.png);
+      background-size: cover;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+    }
+    #music.run{animation: 2s linear infinite mrun;}
+    @keyframes mrun{
+      0%{transform: rotate(0deg);}
+      100%{transform: rotate(360deg);}
+    }
+    #page2{
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      background: #b82a1e;
+    }
+  </style>
+</head>
+<body>
+  <div id="page1">
+    <div class="page1-lantern"></div>
+    <div class="page1-frame">
+      12.31 23:59:5<span>5</span>
+    </div>
+    <div class="page1-text"></div>
+    <div class="page1-fence">
+      <div class="page1-p1"></div>
+      <div class="page1-p2"></div>
+      <div class="page1-p3"></div>
+    </div>
+  </div>
+  <div id="page2">
+    <canvas></canvas>
+  </div>
+
+  <div id="music">
+    <audio src="./static/Happy Tunes - Firework.mp3" loop="true"></audio>
+  </div>
+
+  <div id="fireSound">
+    <audio src="./static/fire.mp3" loop></audio>
+    <audio src="./static/fire.mp3" loop></audio>
+    <audio src="./static/fire.mp3" loop></audio>
+  </div>
+
+
+  <script>
+    musicBg();
+    countDown();
+    
+    // 音乐控制
+    function musicBg() {
+      let music = document.querySelector('#music');
+      let musicAudio = music.querySelector('audio');
+      let fireSoundAudios = document.querySelectorAll('#fireSound audio');
+      musicAudio.volume = 0.2 // 音频音量 0 - 1之前
+      music.addEventListener('click', function(){
+        if(musicAudio.paused){
+          this.className = 'run'
+          musicAudio.play();
+          for(let i=0; i< fireSoundAudios.length; i++){
+            fireSoundAudios[i].play();
+            // muted - 静音
+            fireSoundAudios[i].muted = true;
+            // 开始播放的时间，产生音频错落感
+            fireSoundAudios[i].currentTime = i;
+          }
+        }else {
+          this.className = ''
+          musicAudio.pause();
+          for(let i=0; i< fireSoundAudios.length; i++){
+            fireSoundAudios[i].pause();
+          }
+        }
+      })
+    }
+
+    // 倒计时
+    function countDown() {
+      let countMumber = document.querySelector('.page1-frame span');
+      let page1 = document.querySelector('#page1');
+      let page2 = document.querySelector('#page2');
+      let timer = setInterval(() => {
+        if(countMumber.innerHTML == 9){
+          clearInterval(timer)
+          page1.style.display = 'none'
+          page2.style.display = 'block'
+          initFires();
+        }else {
+          countMumber.innerHTML = ++countMumber.innerHTML;
+        }
+      }, 1000)
+    }
+
+    function initFires() {
+      let canvas = document.querySelector('#page2 canvas');
+      let ctx = canvas.getContext('2d');
+      let fireSoundAudios = document.querySelectorAll('#fireSound audio');
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      let balls = [];
+      let fires = [];
+      let timer = null;
+      let count = 0;
+      let ballAll = 10;
+      canvas.width = width;
+      canvas.height = height;
+
+      timer = setInterval(()=>{
+        if(count == ballAll){
+          clearInterval(timer)
+          count = 0;
+          timer = null;
+        }else {
+          count++;
+          //-----------------------------------------------------
+balls.push(
+  new Ball({
+    r: 3, // 半径
+    x: Math.random() * width/3 + width/3, // 初始坐标点，三分一处到三分二出
+    y: height, // 底部的位置向上移动
+    vx: Math.random() * 2 -1, // X轴的速度：-1 和 1 之间进行X轴的偏移 
+    vy: Math.random() * 2 - 11, // Y轴的速度：-7 和 -9 之间进行Y轴的偏移
+    end() {
+      if(this.vy > 1){
+        // 说明已经开始往下走了,就删除当前元素
+        // balls.indexOf(this) 找到它的位置进行删除
+        balls.splice(balls.indexOf(this), 1); 
+
+        // 针对整个烟花爆炸时候的尺寸大小
+        let size = Math.random() * 10;
+        // 添加烟花
+        for(let i = 0; i<60; i++){
+          // 针对烟花内的每一个子小球的速度的偏差，进行相乘
+          let power = Math.random() * 10 * size; // 力量，扩展的速度
+          // 找到x,y的速度，三角函数找到坐标,随着I的增大，值也会变大
+          let vx = Math.cos(i * 6 * Math.PI / 180) * power;
+          let vy = Math.sin(i * 6 * Math.PI / 180) * power;
+          fires.push(
+            new Fire({
+              r: 3,
+              x: this.x,
+              y: this.y,
+              vx: vx,
+              vy: vy,
+              g: 0.05,
+              end() {
+                if(this.life < 10){
+                  // 说明已经很小了就直接删除
+                  fires.splice(fires.indexOf(this), 1)
+                }
+              }
+            })
+          )
+        }
+      }
+    }
+  })
+);
+          //-----------------------------------------------------
+          
+        }
+      },500)
+
+  // 监听小球的变化
+  loop();
+  function loop() {
+    if(balls.length){
+      // 有小球的时候就开启音频
+      for(let  i=0; i< fireSoundAudios.length; i++){
+        fireSoundAudios[i].muted = false;
+      }
+
+      // 添加有透明度的层
+      ctx.fillStyle = 'rgba(184,42,30,0.2)';
+      ctx.fillRect(0, 0, width, height); 
+    }else {
+      // 没有小球时就静音
+      for(let  i=0; i< fireSoundAudios.length; i++){
+        fireSoundAudios[i].muted = true;
+      }
+      // 添加没有透明度的层
+      ctx.fillStyle = 'rgba(184,42,30)';
+      ctx.fillRect(0, 0, width, height); 
+    }
+
+
+    for(let i =0; i< balls.length; i++){
+      balls[i].update();
+      balls[i].render();
+    }
+
+    // 渲染烟花
+    for(let i =0; i<fires.length;i++){
+      fires[i].update();
+      fires[i].render();
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+      // 创建一个球的类
+      class Ball {
+        // options 配置参数
+        constructor(options){
+          // 所有的配置都拷贝到对象当中，对象中的属性为默认值
+          this.settings = Object.assign({
+            color: 'yellow', // 颜色
+            r: 5, // 半径
+            g: 0.1, // 重力加速度
+            end() {
+              
+            } // 结束回调
+          }, options);
+          // 希望调用更方便，将this.settings挂在到this下。直接通过this.就能使用属性
+          for(let attr in this.settings) {
+            this[attr] = this.settings[attr]
+          }
+        }
+        // 更新值
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += this.g;
+        }
+        // 图形重新绘制
+        render() {
+          ctx.beginPath();
+          // 填充颜色
+          ctx.fillStyle = this.color;
+          // 2Π === 360
+          ctx.arc(this.x, this.y, this.r, 0, 360 * Math.PI / 180)
+          ctx.closePath();
+          ctx.fill();
+          this.end();
+        }
+      }
+
+      // 创建一个爆炸的实例
+      class Fire {
+        constructor(options){
+          this.settings = Object.assign({
+            color: 'yellow', // 颜色
+            r: 5, // 半径
+            g: 0.1, // 重力加速度
+            fs: 0.95, // 摩擦系数，让速度损失的更快一些
+            life: 100, // 因为无法知道不规则的远点何时结束，所以添加一个烟花生命值
+            end() {} // 结束回调
+          }, options);
+          // 希望调用更方便，将this.settings挂在到this下。直接通过this.就能使用属性
+          for(let attr in this.settings) {
+            this[attr] = this.settings[attr]
+          }
+        }
+        // 更新值
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.vy += this.g;
+          this.vx *= this.fs;
+          this.vy *= this.fs;
+          if(this.life > 0 && this.life < 300) {
+            this.life--;
+          }
+        }
+        // 图形重新绘制
+        render() {
+          ctx.beginPath();
+          // 填充颜色
+          ctx.fillStyle = this.color;
+          // 2Π === 360
+          // this.r * Math.min(this.life, 100) 让小球不断变小,不断地去life和100之间的最小值，再除以100作为生命的系数
+          ctx.arc(this.x, this.y, this.r * Math.min(this.life, 100) / 100, 0, 360 * Math.PI / 180)
+          ctx.closePath();
+          ctx.fill();
+          this.end();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
